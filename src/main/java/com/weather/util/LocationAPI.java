@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 
@@ -21,17 +22,27 @@ public  class LocationAPI {
         params.put("text", loc.getLocation()); // text is the variable name the API requests
 
         try {
-            String response = API.callApi(baseUrl, apiKey, apiKeyTag, params);
+            String response = CallAPI.callApi(baseUrl, apiKey, apiKeyTag, params);
 
             // drill down to the data based on the structure of the API response
+            // NOTE: in a real application I would spend the time, go over every scenario and put much more null checks for this drill down.
             JSONObject jsonObject = new JSONObject(response);
             JSONArray arr = (JSONArray)jsonObject.get("features");
+            if (arr.isEmpty()) {
+                return; // no location found
+            }
+            if (!arr.getJSONObject(0).has("geometry")){
+                return; // no location found
+            }
             JSONObject geometry = (JSONObject)arr.getJSONObject(0).get("geometry");
             JSONArray coordinates = geometry.getJSONArray("coordinates");
 
             // get zip code for cache storage
             JSONObject properties = (JSONObject)arr.getJSONObject(0).get("properties");
-            String zip = properties.get("postcode").toString();
+            String zip = null;
+            if (properties.has("postcode")){
+                zip = properties.get("postcode").toString();
+            }
 
             if (!jsonObject.isEmpty()) {
                 Location location = new Location();
@@ -41,9 +52,13 @@ public  class LocationAPI {
                 if (coordinates.get(1) != null){
                     loc.setLatitude(coordinates.get(1).toString());
                 }
-                if (!zip.isBlank()) {
+                // zip code might exist already, but we will overwrite it with zip code given by the API
+                // This will solve the problem if zip was never given by the user
+                if (zip != null) {
                     location.setZipcode(zip);
                 }
+                loc.setLocation(properties.get("formatted").toString());
+
             }
         } catch (IOException e) {
             e.printStackTrace();

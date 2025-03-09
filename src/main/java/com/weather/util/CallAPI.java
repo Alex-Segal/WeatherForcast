@@ -9,7 +9,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class API {
+public class CallAPI {
 
     public static String callApi(String baseUrl, String apiKey, String apiKeyTag, Map<String, String> params) throws IOException {
         StringBuilder urlBuilder = new StringBuilder(baseUrl);

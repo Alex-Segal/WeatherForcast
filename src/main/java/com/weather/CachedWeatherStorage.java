@@ -1,28 +1,30 @@
-package com.weather.util;
+package com.weather;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.weather.DAO.Forcast;
+import com.weather.util.Configurations;
 
 import java.util.concurrent.TimeUnit;
 
 public class CachedWeatherStorage {
-    public CachedWeatherStorage(){
-        expiryInMills = Integer.parseInt(Configurations.getProperties().get("cache_expire_time_sec").toString());
-    }
-    // overloaded constructor to have the ability to change cache expiration time
-    public CachedWeatherStorage(int expiryInMills){
-        this.expiryInMills = expiryInMills;
+    private CachedWeatherStorage(){
     }
 
+    public static CachedWeatherStorage instance;
 
-
+    public static synchronized CachedWeatherStorage getInstance() {
+        if (instance == null) {
+            instance = new CachedWeatherStorage();
+        }
+        return instance;
+    }
 
 
     // build a self expiring cache
-    int expiryInMills;
+    int expiryTime = Integer.parseInt(Configurations.getProperties().get("cache_expire_time_sec").toString());
     Cache<String, Forcast> cache = Caffeine.newBuilder()
-            .expireAfterWrite(expiryInMills, TimeUnit.SECONDS)
+            .expireAfterWrite(expiryTime, TimeUnit.SECONDS)
             .build();
 
 
@@ -34,7 +36,7 @@ public class CachedWeatherStorage {
     public Forcast getFromCache(String key) {
         Forcast result;
         if (cache.getIfPresent(key) != null) {
-            result = cache.getIfPresent(key);
+            return cache.getIfPresent(key);
         }
         return null;
     }

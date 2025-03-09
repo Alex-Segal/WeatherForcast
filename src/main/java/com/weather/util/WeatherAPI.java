@@ -1,4 +1,5 @@
 package com.weather.util;
+import com.weather.CachedWeatherStorage;
 import com.weather.DAO.Forcast;
 import com.weather.DAO.Location;
 import org.json.JSONException;
@@ -9,6 +10,8 @@ import java.util.Map;
 import java.util.Properties;
 
 public class WeatherAPI {
+
+    CachedWeatherStorage storage = CachedWeatherStorage.getInstance();
 
     // This API returns temperature in Kelvin. Need conversion.
     public Forcast getWeather(Location loc) throws IOException, JSONException {
@@ -24,7 +27,7 @@ public class WeatherAPI {
         params.put("lon", loc.getLongitude().toString());
 
         // Make API Call
-        String response = API.callApi(baseUrl, apiKey, apiKeyTag, params);
+        String response = CallAPI.callApi(baseUrl, apiKey, apiKeyTag, params);
         JSONObject jsonObject = new JSONObject(response).getJSONObject("main");
 
         // return forecast output
@@ -34,9 +37,11 @@ public class WeatherAPI {
         forcast.setLowTmp(jsonObject.getDouble("temp_min"));
 
         // store in cache
-        CachedWeatherStorage storage = new CachedWeatherStorage();
-        storage.putToCache(loc.getZipcode(), forcast);
 
+        if (loc.getZipcode() != null & forcast != null) {
+            // API returns temperature in Kelvin and the storage stores it with original value.
+            storage.putToCache(loc.getZipcode(), forcast);
+        }
         return forcast;
 
 

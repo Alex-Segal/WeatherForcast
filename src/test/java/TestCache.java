@@ -1,28 +1,30 @@
-import com.github.benmanes.caffeine.cache.Cache;
 import com.weather.DAO.Forcast;
-import com.weather.util.CachedWeatherStorage;
+import com.weather.CachedWeatherStorage;
 import junit.framework.Assert;
 import org.junit.Test;
+import static org.junit.Assert.assertNull;
 
 public class TestCache {
 
     @Test
     public void putToCacheTest(){
-        CachedWeatherStorage cache = new CachedWeatherStorage();
+        CachedWeatherStorage cache = CachedWeatherStorage.getInstance();
         Forcast forcast = new Forcast();
+        forcast.setTemp(1.1);
 
-        cache.putToCache("key", forcast);
-        Assert.assertEquals(cache.getFromCache("key").getTemp(), 1.1);
+        cache.putToCache("12345", forcast);
+        Assert.assertEquals(cache.getFromCache("12345").getTemp(), 1.1);
     }
 
     @Test
     public void putToCacheWithDeleyTest() throws InterruptedException {
-        CachedWeatherStorage cache = new CachedWeatherStorage(1);
+        // change properties file to make the cache remember values for less time than you test for
+        CachedWeatherStorage cache = CachedWeatherStorage.getInstance();
         Forcast forcast = new Forcast();
         forcast.setTemp(1.1);
-        cache.putToCache("key", forcast);
+        cache.putToCache("12345", forcast);
         Thread.sleep(3000);
-        Assert.assertNull(cache.getFromCache("key"));
+        assertNull(cache.getFromCache("12345"));
     }
 
 }

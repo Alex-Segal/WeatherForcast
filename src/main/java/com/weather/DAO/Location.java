@@ -14,7 +14,8 @@ public class Location {
     }
 
     public void setZipcode(String zipcode) {
-        this.zipcode = zipcode;
+        // use only first 5 digits
+        this.zipcode = zipcode.substring(0, 5);
     }
 
     public String getLocation() {
